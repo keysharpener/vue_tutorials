@@ -1,7 +1,10 @@
 <meta charset="UTF-8"> 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
-<head>My todo list</head>
+<head>
+    <link rel="stylesheet" type="text/css" href="styles/todolist.css">
+</head>
+<h1>My todo list</h1>
 <div id="app">
     <label>Task description: </label>
     <input v-model="taskDescription" placeholder="Describe what to do">
@@ -12,6 +15,7 @@
             v-for="item in todoList" 
             v-bind:todo="item" 
             v-bind:key="item.id" 
+            v-bind:class="['todo-item', item.status]"
             v-on:remove-item="remove"
             v-on:change-item-status="changeStatus">
         </todo-item>
@@ -23,7 +27,7 @@
         props: ['todo'],
         template: `
         <li>
-            <label>{{todo.text}}, status : {{todo.status}}</label>
+            <label>{{todo.text}}, status : {{todo.status}}, id : {{todo.id}}</label>
             <button v-on:click="$emit('change-item-status', todo.text)">Change status</button>
             <button v-on:click="$emit('remove-item', todo.text)">Remove</button>
         </li>
@@ -35,15 +39,17 @@
         data: {
             todoList: [],
             taskDescription: '',
-            viewDuplicateErrorMessage: false
+            viewDuplicateErrorMessage: false,
+            counter: 0
         },
         methods: {
             addItem: function () {
                 itemAlreadyExists = this.getExistingElement(this.taskDescription) !== undefined
                 if (!itemAlreadyExists) {
-                    itemToAdd = {id: this.todoList.length, text: this.taskDescription , status: "Not finished"}
+                    itemToAdd = {id: this.counter, text: this.taskDescription , status: "Unfinished"}
                     this.todoList.push(itemToAdd)
                     this.taskDescription = ''
+                    this.counter++
                 }
                 this.viewDuplicateErrorMessage = itemAlreadyExists ? true : false
             },
@@ -56,11 +62,11 @@
             changeStatus: function (elementName) {
                 itemToFinish = this.getExistingElement(elementName)
                 newValue = ""
-                if (itemToFinish.status === "Not finished"){
+                if (itemToFinish.status === "Unfinished"){
                     newValue = "Finished"
                 }
                 else{
-                    newValue = "Not finished"
+                    newValue = "Unfinished"
                 }
                 Vue.set(itemToFinish, 'status', newValue)
             },
