@@ -1,0 +1,101 @@
+<meta charset="UTF-8"> 
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="styles/todolist.css">
+</head>
+<h1>My todolist</h1>
+<div id="app">
+    <label>Task description: </label>
+    <input v-model="taskDescription" placeholder="Describe what to do">
+    <button v-if="isAddButtonVisible()" v-on:click="addItem">Add</button>
+    <label v-if="viewDuplicateErrorMessage">A task with the same name already exists</label>
+    <ol>
+        <todo-item 
+            v-for="item in todoList" 
+            v-bind:todo="item" 
+            v-bind:key="item.id" 
+            v-on:remove-item="remove"
+            v-on:change-item-status="changeStatus">
+        </todo-item>
+    </ol>
+</div>
+
+<script>
+    Vue.component('todo-item', {
+        props: ['todo'],
+        template: `
+        <li>
+            <label>\✘ {{todo.text}}, status : {{todo.status}}</label>
+            <button v-on:click="$emit('change-item-status', todo.text)">Change status</button>
+            <button v-on:click="$emit('remove-item', todo.text)">Remove</button>
+        </li>
+        `
+    })
+
+    var app = new Vue({
+        el: "#app",
+        data: {
+            todoList: [],
+            taskDescription: '',
+            viewDuplicateErrorMessage: false
+        },
+        created:  function(){
+                this.todoList = this.getTodoList();    
+        },
+        methods: {
+            addItem: function () {
+                itemAlreadyExists = this.getExistingElement(this.taskDescription) !== undefined
+                if (!itemAlreadyExists) {
+                    itemToAdd = {id: this.todoList.length, text: this.taskDescription , status: "Not finished"}
+                    this.todoList.push(itemToAdd)
+                    this.taskDescription = ''
+                }
+                this.viewDuplicateErrorMessage = itemAlreadyExists ? true : false
+                pushChange(itemToAdd)
+            },
+            remove: function (elementName) {
+                itemToFinish = this.getExistingElement(elementName)
+                if (itemToFinish) {
+                    Vue.delete(this.todoList, this.todoList.indexOf(itemToFinish))
+                }
+            },
+            changeStatus: function (elementName) {
+                itemToFinish = this.getExistingElement(elementName)
+                newValue = ""
+                if (itemToFinish.status === "Not finished"){
+                    newValue = "Finished"
+                }
+                else{
+                    newValue = "Not finished"
+                }
+                Vue.set(itemToFinish, 'status', newValue)
+                pushChange(itemToAdd)                
+            },
+            isAddButtonVisible: function () {
+                return this.taskDescription !== "";
+            },
+            getExistingElement: function (elementName) {
+                return this.todoList.find(x => x.text === elementName)
+            },
+            getTodoList(){
+                var vm = this;
+                axios.get('http://localhost:8080/lists')
+                    .then(function (response) {
+                        vm.todoList = response;
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            pushChange(todoListItem){
+                axios.post('http://localhost:8080/lists', {
+                    id: todoListItem.id,
+                    text: todoListItem.text,
+                    status: todoListItem.status
+                })
+            }
+        }
+    })
+</script>

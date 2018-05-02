@@ -1,0 +1,16 @@
+{
+  "name": "my-project",
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "verbose": true,
+    "testRegex": ".*-test\\.js$",
+    "testEnvironment": "node"
+  },
+  "dependencies": {
+    "cookie-session": "^2.0.0-beta.3",
+    "express": "^4.16.3",
+    "request": "^2.85.0"
+  }
+}

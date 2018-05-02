@@ -1,6 +1,6 @@
 <meta charset="UTF-8"> 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
 <head>
     <link rel="stylesheet" type="text/css" href="styles/todolist.css">
 </head>
@@ -27,7 +27,7 @@
         props: ['todo'],
         template: `
         <li>
-            <label>{{todo.text}}, status : {{todo.status}}, id : {{todo.id}}</label>
+            <label>{{todo.text}}, status : {{todo.status}}, id : {{todo.id}}, shouldDo {{todo.shouldDo}}</label>
             <button v-on:click="$emit('change-item-status', todo.text)">Change status</button>
             <button v-on:click="$emit('remove-item', todo.text)">Remove</button>
         </li>
@@ -47,6 +47,7 @@
                 itemAlreadyExists = this.getExistingElement(this.taskDescription) !== undefined
                 if (!itemAlreadyExists) {
                     itemToAdd = {id: this.counter, text: this.taskDescription , status: "Unfinished"}
+                    itemToAdd.shouldDo = this.getShouldDo()
                     this.todoList.push(itemToAdd)
                     this.taskDescription = ''
                     this.counter++
@@ -75,6 +76,17 @@
             },
             getExistingElement: function (elementName) {
                 return this.todoList.find(x => x.text === elementName)
+            },
+            getShouldDo: function(){
+                result = ''
+                axios.get('https://yesno.wtf/api')
+                        .then(function (response) {
+                        result = response.data.answer
+                    })
+                    .catch(function (error) {
+                        console.log(error)
+                        result = 'Error! Could not reach the API. ' + error
+                    })
             }
         }
     })
