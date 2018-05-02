@@ -53,12 +53,13 @@
                     this.taskDescription = ''
                 }
                 this.viewDuplicateErrorMessage = itemAlreadyExists ? true : false
-                pushChange(itemToAdd)
+                this.pushChange(itemToAdd)
             },
             remove: function (elementName) {
-                itemToFinish = this.getExistingElement(elementName)
+                itemToFinish = this.getExistingElement(elementName);
                 if (itemToFinish) {
-                    Vue.delete(this.todoList, this.todoList.indexOf(itemToFinish))
+                    Vue.delete(this.todoList, this.todoList.indexOf(itemToFinish));
+                    this.removeItem(itemToFinish);
                 }
             },
             changeStatus: function (elementName) {
@@ -71,7 +72,7 @@
                     newValue = "Not finished"
                 }
                 Vue.set(itemToFinish, 'status', newValue)
-                pushChange(itemToAdd)                
+                this.pushChange(itemToFinish)                
             },
             isAddButtonVisible: function () {
                 return this.taskDescription !== "";
@@ -83,7 +84,7 @@
                 var vm = this;
                 axios.get('http://localhost:8080/lists')
                     .then(function (response) {
-                        vm.todoList = response;
+                        vm.todoList = response.data;
                     })
                     .catch(function (error) {
                         console.log(error);
@@ -94,6 +95,11 @@
                     id: todoListItem.id,
                     text: todoListItem.text,
                     status: todoListItem.status
+                })
+            },
+            removeItem(todoListItem){
+                axios.post('http://localhost:8080/lists/remove', {
+                    text: todoListItem.text
                 })
             }
         }
