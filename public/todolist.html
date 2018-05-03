@@ -1,5 +1,6 @@
 <!doctype>
 <html lang="en" />
+
 <head>
     <meta charset="utf-8">
     <meta charset="UTF-8">
@@ -54,29 +55,34 @@
         },
         methods: {
             addItem: function () {
-                const itemAlreadyExists = this.getExistingElement(this.taskDescription) !== undefined
-                if (!itemAlreadyExists) {
-                    itemToAdd = { id: this.todoList.length, text: this.taskDescription, done: false }
-                    this.todoList.push(itemToAdd)
-                    this.taskDescription = ''
-                }
-                this.viewDuplicateErrorMessage = itemAlreadyExists ? true : false
-                this.pushChange(itemToAdd)
+                const vm = this;
+                const itemToAdd = { id: this.todoList.length, text: this.taskDescription, done: false }
+                this.pushChange(itemToAdd).then(function (response) {
+                    vm.todoList = response.data;
+                    vm.taskDescription = "";
+                }).catch(function (err) {
+                    viewDuplicateErrorMessage = true;
+                })
             },
             remove: function (elementName) {
+                const vm = this;
                 const itemToFinish = this.getExistingElement(elementName);
                 if (itemToFinish) {
-                    Vue.delete(this.todoList, this.todoList.indexOf(itemToFinish));
-                    this.removeItem(itemToFinish);
+                    this.removeItem(itemToFinish).then(function (response) {
+                    vm.todoList = response.data
+                    });
                 }
             },
             changeStatus: function (elementName) {
+                const vm = this;
                 const itemToFinish = this.getExistingElement(elementName)
-                if (typeof(itemToFinish !== "undefined")){
-                    const newValue = !itemToFinish.status;
-                    Vue.set(itemToFinish, 'status', newValue);
-                    this.pushChange(itemToFinish);;
-                }                
+                if (typeof (itemToFinish !== "undefined")) {
+                    itemToFinish.status = !itemToFinish.status;
+                    this.pushChange(itemToFinish).then(function (response) {
+                    vm.todoList = response.data;
+                    vm.taskDescription = "";
+                })
+                }
             },
             isAddButtonVisible: function () {
                 return this.taskDescription !== "";
@@ -95,14 +101,14 @@
                     });
             },
             pushChange(todoListItem) {
-                axios.post('http://localhost:8080/lists', {
+                return axios.post('http://localhost:8080/lists', {
                     id: todoListItem.id,
                     text: todoListItem.text,
                     status: todoListItem.status
                 })
             },
             removeItem(todoListItem) {
-                axios.post('http://localhost:8080/lists/remove', {
+                return axios.post('http://localhost:8080/lists/remove', {
                     text: todoListItem.text
                 })
             }

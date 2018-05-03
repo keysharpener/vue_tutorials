@@ -20,24 +20,27 @@ app
     res.sendFile(__dirname  +"/public/todolist.html");
 })
 .get('/lists', function(req, res){
-    res.setHeader('Content-Type', 'application/json');
-    res.write(JSON.stringify(req.session.todolist))
-    res.end()
+    returnList(res, req);
 })
 .post('/lists', function(req,res){
     updateMatchingItem(req);
-    res.writeHead(204)    
-    res.end();
+    returnList(res, req);
 })
 .post('/lists/remove', function(req,res){
     removeMatchingItem(req);
-    res.writeHead(204)    
-    res.end();
+    returnList(res, req);
 })
 .use(function(req, res, next){
     res.redirect("/my-todo-list")
 });
 app.listen(8080);
+
+function returnList(res, req) {
+    res.setHeader('Content-Type', 'application/json');
+    res.writeHead(200);
+    res.write(JSON.stringify(req.session.todolist));
+    res.end();
+}
 
 function removeMatchingItem(req) {
     var sessionList = req.session.todolist;
