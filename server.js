@@ -15,7 +15,7 @@ app
     }
     next();
 })
-.get('/', function(req, res){
+.get('/my-todo-list', function(req, res){
     res.setHeader('Content-Type', 'text/html');
     res.sendFile(__dirname  +"/public/todolist.html");
 })
@@ -25,33 +25,44 @@ app
     res.end()
 })
 .post('/lists', function(req,res){
+    updateMatchingItem(req);
+    res.writeHead(204)    
+    res.end();
+})
+.post('/lists/remove', function(req,res){
+    removeMatchingItem(req);
+    res.writeHead(204)    
+    res.end();
+})
+.use(function(req, res, next){
+    res.redirect("/my-todo-list")
+});
+app.listen(8080);
+
+function removeMatchingItem(req) {
+    var sessionList = req.session.todolist;
+    var itemToRemove = req.body.text;
+    var existingItem = sessionList.find(x => x.text === itemToRemove);
+    if (typeof (existingItem) !== "undefined") {
+        var indexToUpdate = sessionList.indexOf(existingItem);
+        req.session.todolist.splice(indexToUpdate, 1);
+    }
+}
+
+function updateMatchingItem(req) {
     var sessionList = req.session.todolist;
     var todoListItem = {
         id: req.body.id,
         text: req.body.text,
         status: req.body.status,
-    }
-    var existingItem = sessionList.find(x=>x.text === todoListItem.text)
-    if (typeof(existingItem) !== "undefined"){
+    };
+    var existingItem = sessionList.find(x => x.text === todoListItem.text);
+    if (typeof (existingItem) !== "undefined") {
         var indexToUpdate = sessionList.indexOf(existingItem);
         sessionList[indexToUpdate] = todoListItem;
     }
-    else{
-        sessionList.push(todoListItem)
+    else {
+        sessionList.push(todoListItem);
     }
-    res.end();
-})
-.post('/lists/remove', function(req,res){
-    var sessionList = req.session.todolist;    
-    var itemToRemove = req.body.text
-    var existingItem = sessionList.find(x=>x.text === itemToRemove)
-    if (typeof(existingItem) !== "undefined"){
-        var indexToUpdate = sessionList.indexOf(existingItem);
-        req.session.todolist.splice(indexToUpdate, 1);
-    }
-    res.end();
-})
-.use(function(req, res, next){
-    res.redirect("/")
-});
-app.listen(8080);
+}
+
