@@ -4,3 +4,6 @@
 .Finished {
     background-color: green;
 }
+.todo-item{
+    list-style-type: none;
+}

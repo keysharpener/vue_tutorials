@@ -4,7 +4,6 @@ var bodyParser = require('body-parser');
 
 
 var app = express();
-var userLists = {};
 app
 .use(session({secret:'topsecretstuff'}))
 .use(bodyParser.json())
